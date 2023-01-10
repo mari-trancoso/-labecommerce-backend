@@ -59,8 +59,8 @@ export const createUser = (id:string, email:string, senha:string) => {
 
 }
 
-export const getAllUsers = () :void => {
-    console.table(users)
+export const getAllUsers = () => {
+    return users
 }
 
 export const createProduct = (id: string, name: string, price: number, category: Category) => {
@@ -76,8 +76,8 @@ export const createProduct = (id: string, name: string, price: number, category:
     console.log("Produto criado com sucesso!")
 }
 
-export const getAllProducts = () :void=> {
-    console.table(products)
+export const getAllProducts = () => {
+    return products
 }
 
 export const getProductsById = (idToSearch:string) : TProduct[]=> {
