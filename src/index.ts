@@ -185,6 +185,7 @@ app.post(`/purchases`, (req:Request, res: Response) => {
             res.status(404)
             throw new Error("Coloque um preço total para criar uma nova compra.")
         }
+        if(totalPrice !== quantity*)
         if(!(users.find((user) => user.id === userId))){
             res.status(404)
             throw new Error("O usuário não existe. Escolha um usuário existente.")
