@@ -1,3 +1,4 @@
+-- Active: 1673884367428@@127.0.0.1@3306
 CREATE Table users (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
@@ -108,6 +109,41 @@ WHERE price >= 10 AND price <= 70
 ORDER BY price ASC;
 
 
+--Criação da tabela de pedidos
+CREATE TABLE purchases (
+    id TEXT PRIMARY KEY UNIQUE NOT NULL, --TEXT, PK, único e obrigatório
+    total_price REAL UNIQUE NOT NULL, --REAL, único e obrigatório
+    paid INTEGER NOT NULL, --INTEGER e obrigatório
+    delivered_at TEXT, -- TEXT e opcional
+    buyer_id TEXT NOT NULL, -- TEXT, obrigatório e FK = referencia a coluna id da tabela users
+    FOREIGN KEY (buyer_id) REFERENCES users(id)
+);
 
 
+-- A coluna paid será utilizada para guardar uma lógica booleana. O SQLite recomenda o uso do número 0 para false e 1 para true.
+-- Os pedidos começam com paid valendo 0 e quando o pagamento for finalizado, se atualiza para 1.
+-- A coluna delivered_at será utilizada para gerenciar a data de entrega do pedido. Ela é opcional, porque sempre começará sem valor ao criar um pedido, ou seja, null.
+-- O SQLite recomenda utilizar TEXT para lidar com strings no formato ISO8601 "aaaa-mm-dd hh:mm:sss". Lembre-se da existência da função nativa DATETIME para gerar datas nesse formato.
 
+-- Crie dois pedidos para cada usuário cadastrado
+INSERT INTO purchases (id, total_price, paid, delivered_at, buyer_id)
+VALUES 
+    ("p001", 100, 0, NULL, "i001"), 
+    ("p002", 35.9, 1, "2023-01-18", "i001"), 
+    ("p003", 40, 0, NULL, "i002"), 
+    ("p004", 78, 0, NULL, "i002"), 
+    ("p005", 99.99, 0, NULL, "i004"), 
+    ("p006", 25, 0, NULL, "i004");
+
+-- Crie a query de consulta utilizando junção para simular um endpoint de histórico de compras de um determinado usuário.
+-- Mocke um valor para a id do comprador, ela deve ser uma das que foram utilizadas no exercício 2.    
+SELECT * FROM purchases
+INNER JOIN  users
+ON purchases.buyer_id = users.id
+WHERE users.id = "i004";
+
+
+UPDATE purchases
+SET delivered_at = DATETIME('now'),
+    paid = 1
+WHERE id = 'p006';
