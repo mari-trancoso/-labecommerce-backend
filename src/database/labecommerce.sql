@@ -147,3 +147,44 @@ UPDATE purchases
 SET delivered_at = DATETIME('now'),
     paid = 1
 WHERE id = 'p006';
+
+----- Criação tabela m:n purchases_products
+CREATE TABLE purchases_products (
+    purchase_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    FOREIGN KEY (purchase_id) REFERENCES purchases(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+INSERT INTO purchases_products (purchase_id, product_id, quantity)
+VALUES 
+    ("p001", "p006", 2), 
+    ("p002", "p001", 3), 
+    ("p003", "p004", 1);
+
+INSERT INTO purchases_products (purchase_id, product_id, quantity)
+VALUES 
+    ("p001", "p003", 1);
+
+
+SELECT * FROM purchases_products;
+
+SELECT * FROM purchases_products
+INNER JOIN products
+ON purchases_products.product_id = products.id;
+
+
+SELECT * FROM purchases_products
+INNER JOIN purchases
+ON purchases_products.purchase_id = purchases.id
+INNER JOIN products
+ON purchases_products.product_id = products.id;
+
+SELECT
+    purchases_products.purchase_id AS codigoCompra,
+    products.name AS produto,
+    purchases_products.quantity AS quantidadeComprada
+FROM products
+INNER JOIN purchases_products
+ON products.id = purchases_products.product_id;
