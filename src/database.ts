@@ -4,13 +4,15 @@ export const users:TUser[] = [
     {
         id: "bananinha",
         email: "bananinha@email.com",
-        password: "bananinha01"
+        password: "bananinha01",
+        name: "Banana1"
 
     },
     { 
         id: "zinho",
         email: "zinho@email.com",
-        password: "zinho123"
+        password: "zinho123",
+        name: "Paulo"
 
     }
 ]
@@ -20,13 +22,15 @@ export const products:TProduct[] = [
         id: "chocolate",
         name: "suflair",
         price: 4.90,
-        category: Category.FOOD
+        description: "chocolate",
+        imageUrl:"http://..."
     },
     {
         id: "bolo",
         name: "bolo de cenoura",
         price: 15.90,
-        category: Category.FOOD
+        description: "chocolate",
+        imageUrl:"http://..."
     }
     
 ]
@@ -46,11 +50,12 @@ export const purchases:TPurchase[] = [
     }
 ]
 
-export const createUser = (id:string, email:string, senha:string) => {
+export const createUser = (id:string, email:string, senha:string, nome:string) => {
     const newUser:TUser = {
         id: id,
         email: email,
-        password: senha
+        password: senha,
+        name: nome
     }
 
     users.push(newUser)
@@ -63,12 +68,13 @@ export const getAllUsers = () => {
     return users
 }
 
-export const createProduct = (id: string, name: string, price: number, category: Category) => {
+export const createProduct = (id: string, name: string, price: number, category: Category, description:string, imageUrl:string) => {
     const newProduct:TProduct = {
         id: id,
         name: name,
         price: price,
-        category: category
+        description: description,
+        imageUrl: imageUrl
     }
 
     products.push(newProduct)

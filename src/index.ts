@@ -3,6 +3,8 @@ import { Category } from "./types";
 import express, { Request, Response } from "express"
 import cors from 'cors';
 import {TUser, TProduct, TPurchase} from "./types"
+import { db } from "./database/knex";
+
 
 const app = express()
 app.use(express.json())
@@ -18,35 +20,53 @@ app.get('/ping', (req: Request, res: Response) => {
 
 
 //GET USERS
-app.get(`/users`, (req: Request , res: Response) => {
+app.get(`/users`, async(req: Request , res: Response) => {
     try{
-        res.status(200).send(getAllUsers())
+        //res.status(200).send(getAllUsers())
+        const result = await db.raw("SELECT * FROM users;")
+
+        res.status(200).send(result)
+
     }catch(error:any){
         console.log(error)
 
-        if(res.statusCode === 200){
+        if (req.statusCode === 200) {
             res.status(500)
         }
-        res.send(error.message)
+
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
     }
 })
 
+
 //GET PRODUCTS
-app.get(`/products`, (req:Request, res: Response) => {
+app.get(`/products`, async(req:Request, res: Response) => {
     try{
-        res.status(200).send(getAllProducts())
+        //res.status(200).send(getAllProducts())
+        const result = await db.raw("SELECT * FROM products;")
+
+        res.status(200).send(result)
     }catch(error:any){
         console.log(error)
 
-        if(res.statusCode === 200){
+        if (req.statusCode === 200) {
             res.status(500)
         }
-        res.send(error.message)
+
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
     } 
 })
 
 //GET SEARCH PRODUCTS
-app.get(`/products/search`, (req:Request, res: Response) => {
+app.get(`/products/search`, async(req:Request, res: Response) => {
     try{
         const q = req.query.q as string
 
@@ -55,22 +75,33 @@ app.get(`/products/search`, (req:Request, res: Response) => {
             throw new Error("A busca deve ter pelo menos um caractere.")
         }
 
-        const result = products.filter((product) => {
-            return product.name.toLowerCase().includes(q.toLowerCase()) 
-        })
+        const result = await db.raw(`
+            SELECT * FROM products
+            WHERE name LIKE "%${q}%";
+        `)
+
+        // const result = products.filter((product) => {
+        //     return product.name.toLowerCase().includes(q.toLowerCase()) 
+        // })
 
         res.status(200).send(result)
     }catch(error:any){
         console.log(error)
-        if(res.statusCode === 200){
+
+        if (req.statusCode === 200) {
             res.status(500)
         }
-        res.send(error.message)
+
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
     }
 })
 
 //POST CREATE USERS
-app.post(`/users`, (req:Request, res: Response) => {
+app.post(`/users`, async(req:Request, res: Response) => {
     try{
         // const newUser = {
         //     id,
@@ -78,7 +109,7 @@ app.post(`/users`, (req:Request, res: Response) => {
         //     password
         // }
         // users.push(newUser)
-        const {id, email, password} = req.body as TUser
+        const {id, email, password, name} = req.body as TUser
 
         if(!id){
             res.status(404)
@@ -92,6 +123,10 @@ app.post(`/users`, (req:Request, res: Response) => {
             res.status(404)
             throw new Error("Coloque uma password para criar um novo usuário.")
         }
+        if(!name){
+            res.status(404)
+            throw new Error("Coloque um nome para criar um novo usuário.")
+        }
 
         if(users.find((user) => user.id === id)){
             res.status(404)
@@ -103,7 +138,11 @@ app.post(`/users`, (req:Request, res: Response) => {
             throw new Error("Esse email já existe. Crie outro.")
         }
 
-        createUser(id, email, password)
+        // createUser(id, email, password)
+        await db.raw(`
+            INSERT INTO users (id, email, password, name)
+            VALUES
+            ("${id}", "${email}", "${password}", "${name}");`)
         res.status(201).send("Novo usuário registrado com sucesso!")
     }catch(error:any){
         console.log(error)
@@ -115,9 +154,9 @@ app.post(`/users`, (req:Request, res: Response) => {
 })
 
 // POST CREATE PRODUCTS
-app.post(`/products`, (req:Request, res: Response) => {
+app.post(`/products`, async(req:Request, res: Response) => {
     try{
-        const {id, name, price, category} = req.body as TProduct
+        const {id, name, price, description, imageUrl} = req.body as TProduct
         // const newProduct = {
         //     id,
         //     name,
@@ -137,9 +176,13 @@ app.post(`/products`, (req:Request, res: Response) => {
             res.status(404)
             throw new Error("Coloque um preço para criar um novo produto.")
         }
-        if(!category){
+        if(!description){
             res.status(404)
-            throw new Error("Coloque uma categoria para criar um novo produto.")
+            throw new Error("Coloque uma descrição para criar um novo produto.")
+        }
+        if(!imageUrl){
+            res.status(404)
+            throw new Error("Coloque uma imagem para criar um novo produto.")
         }
 
         if(products.find((product) => product.id === id)){
@@ -147,7 +190,11 @@ app.post(`/products`, (req:Request, res: Response) => {
             throw new Error("Esse id já existe. Crie outro.")
         }
 
-        createProduct(id, name, price, category)
+        // createProduct(id, name, price, category)
+        await db.raw(`
+        INSERT INTO products (id, name,price, description, imageUrl)
+        VALUES
+        ("${id}", "${name}", ${price}, "${description}", "${imageUrl}");`)
         res.status(201).send("Produto cadastrado com sucesso!")
 
     } catch(error:any){
@@ -185,7 +232,6 @@ app.post(`/purchases`, (req:Request, res: Response) => {
             res.status(404)
             throw new Error("Coloque um preço total para criar uma nova compra.")
         }
-        if(totalPrice !== quantity*)
         if(!(users.find((user) => user.id === userId))){
             res.status(404)
             throw new Error("O usuário não existe. Escolha um usuário existente.")
@@ -408,7 +454,7 @@ app.put(`/product/:id`, (req:Request, res:Response) => {
         if (product) {
             product.name = newName || product.name
             product.price = newPrice || product.price
-            product.category = newCategory || product.category
+            product.description = newCategory || product.description
         }
 
         res.status(200).send("Produto atualizado com sucesso")
@@ -421,5 +467,8 @@ app.put(`/product/:id`, (req:Request, res:Response) => {
         res.send(error.message)
     }
 })
+
+/////////////////////////////////Refatorando os endpoints
+
 
 

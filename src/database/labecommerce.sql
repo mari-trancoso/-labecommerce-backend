@@ -1,190 +1,81 @@
--- Active: 1673884367428@@127.0.0.1@3306
-CREATE Table users (
+
+CREATE TABLE users (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
+    name  TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    created_at TEXT DEFAULT(DATETIME()) NOT NULL
 );
-
-PRAGMA table_info ('users');
-
-INSERT INTO users (id, email, password)
-VALUES
-("i001", "mari@email.com", "mari123"),
-("i002", "paulo@email.com", "paulo123"),
-("i003", "lua@email.com", "lua123");
-
--- Retorna todos os usuários cadastrados
-SELECT * FROM users;
 
 CREATE TABLE products (
-    id TEXT PRIMARY KEY UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    price REAL NOT NULL,
-    category TEXT NOT NULL
+  id  TEXT PRIMARY KEY UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  price REAL NOT NULL,
+  description TEXT NOT NULL,
+  image_url TEXT NOT NULL
 );
 
-PRAGMA table_info ('products');
-
-INSERT INTO products (id, name,price,category)
-VALUES
-("p001", "casaco", 5.99, "vestuário"),
-("p002", "Fundação", 50, "livro"),
-("p003", "meia", 10.9, "vestuário"),
-("p004", "fone sem fio", 110, "eletrônico"),
-("p005", "café", 32, "comida");
-
--- Retorna todos os produtos cadastrados
-SELECT * FROM products;
-
---Search product by name
-SELECT * FROM products
-WHERE name LIKE "fone%";
-
---Create user
---- Mocke um novo usuário
---- Insire o item mockado na tabela users
-INSERT INTO users (id, email, password)
-VALUES
-("i004", "joao@email.com", "joao123");
-
---Create product
---- Mocke um novo produto
---- Insire o item mockado na tabela produtos
-INSERT INTO products (id,name,price,category)
-VALUES
-("p006", "Harry Potter", 40, "livro");
-
---GET products by id
---- mocke uma id
---- busca baseada no valor mockado
-SELECT * FROM products
-WHERE id LIKE "p006";
-
---DELETE user by id
----mocke uma id
----delete a linha baseada no valor mockado
-DELETE FROM users
-WHERE id LIKE 'i003';
-
---DELETE product by id
----mocke uma id
----delete a linha baseada no valor mockado
-DELETE FROM products
-WHERE id LIKE 'p002';
-
--- EDIT user by id
---- mocke valores para editar um user
---- edite a linha baseada nos valores mockados
-UPDATE users
-SET email = "novoemailmari@email.com",
-    password = "senhanova123mari"
-WHERE id = 'i001';
-
--- EDIT product by id
---- mocke valores para editar um user
---- edite a linha baseada nos valores mockados
-UPDATE products
-SET price = 8.9,
-    name = 'meia azul'
-WHERE id = 'p003';
-
--- GET all users
---- retorna o resultado ordenado pela coluna name em ordem crescente
-SELECT * FROM users
-ORDER BY id ASC;
-
--- GET all products
---- retorna o resultado ordenado pela coluna price em ordem crescente
---- limite o resultado em 20 iniciando pelo primeiro item
-SELECT * FROM products
-ORDER BY price ASC
-LIMIT 20
-OFFSET 0;
-
--- GET all products
---- mocke um intervalo de preços, por exemplo entre 100 e 300
---- retorna os produtos com preço dentro do intervalo mockado em ordem crescente
-SELECT * FROM products
-WHERE price >= 10 AND price <= 70
-ORDER BY price ASC;
-
-
---Criação da tabela de pedidos
 CREATE TABLE purchases (
-    id TEXT PRIMARY KEY UNIQUE NOT NULL, --TEXT, PK, único e obrigatório
-    total_price REAL UNIQUE NOT NULL, --REAL, único e obrigatório
-    paid INTEGER NOT NULL, --INTEGER e obrigatório
-    delivered_at TEXT, -- TEXT e opcional
-    buyer_id TEXT NOT NULL, -- TEXT, obrigatório e FK = referencia a coluna id da tabela users
-    FOREIGN KEY (buyer_id) REFERENCES users(id)
+    id TEXT PRIMARY KEY UNIQUE NOT NULL,
+    total_price REAL NOT NULL,
+    created_at TEXT DEFAULT(DATETIME()) NOT NULL,
+    paid INTEGER DEFAULT(0) NOT NULL,
+    buyer TEXT NOT NULL,
+    FOREIGN KEY (buyer) REFERENCES users(id)
 );
 
-
--- A coluna paid será utilizada para guardar uma lógica booleana. O SQLite recomenda o uso do número 0 para false e 1 para true.
--- Os pedidos começam com paid valendo 0 e quando o pagamento for finalizado, se atualiza para 1.
--- A coluna delivered_at será utilizada para gerenciar a data de entrega do pedido. Ela é opcional, porque sempre começará sem valor ao criar um pedido, ou seja, null.
--- O SQLite recomenda utilizar TEXT para lidar com strings no formato ISO8601 "aaaa-mm-dd hh:mm:sss". Lembre-se da existência da função nativa DATETIME para gerar datas nesse formato.
-
--- Crie dois pedidos para cada usuário cadastrado
-INSERT INTO purchases (id, total_price, paid, delivered_at, buyer_id)
-VALUES 
-    ("p001", 100, 0, NULL, "i001"), 
-    ("p002", 35.9, 1, "2023-01-18", "i001"), 
-    ("p003", 40, 0, NULL, "i002"), 
-    ("p004", 78, 0, NULL, "i002"), 
-    ("p005", 99.99, 0, NULL, "i004"), 
-    ("p006", 25, 0, NULL, "i004");
-
--- Crie a query de consulta utilizando junção para simular um endpoint de histórico de compras de um determinado usuário.
--- Mocke um valor para a id do comprador, ela deve ser uma das que foram utilizadas no exercício 2.    
-SELECT * FROM purchases
-INNER JOIN  users
-ON purchases.buyer_id = users.id
-WHERE users.id = "i004";
-
-
-UPDATE purchases
-SET delivered_at = DATETIME('now'),
-    paid = 1
-WHERE id = 'p006';
-
------ Criação tabela m:n purchases_products
-CREATE TABLE purchases_products (
+CREATE TABLE purchases_products(
     purchase_id TEXT NOT NULL,
     product_id TEXT NOT NULL,
-    quantity INTEGER NOT NULL,
-    FOREIGN KEY (purchase_id) REFERENCES purchases(id),
+    quantity INTEGER NOT NULL DEFAULT(1),
+    FOREIGN KEY (purchase_id) REFERENCES purchases(id)
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
-INSERT INTO purchases_products (purchase_id, product_id, quantity)
+INSERT INTO users (id, name, email, password)
 VALUES 
-    ("p001", "p006", 2), 
-    ("p002", "p001", 3), 
-    ("p003", "p004", 1);
+    ("i001", "Mariana Negrão", "mari@email.com", "mari123!"), 
+    ("i002", "Paulo Roberto", "paulo@email.com", "paulo123"), 
+    ("i003", "Sandra Jane", "sandra@email.com", "sandra123");
+
+SELECT * FROM users;
+
+INSERT INTO products (id, name, price, description, image_url)
+VALUES 
+    ("po01", "vestido", 85, "vestido azul curto", "http://..."), 
+    ("po02", "regata", 74.99, "blusa regata preta", "http://..."), 
+    ("po03", "shorts", 110, "shorts jeans", "http://..."), 
+    ("po04", "calça", 140, "calça de linho pantalona", "http://..."), 
+    ("po05", "camisa", 110, "camisa branca de linho", "http://...");
+
+SELECT * FROM products;
+
+INSERT INTO purchases (id, total_price, paid, buyer)
+VALUES 
+    ("pu01", 280, 1, "i001"), 
+    ("pu02", 85, 1, "i001"), 
+    ("pu03",74.99, 0, "i002" ), 
+    ("pu04", 110, 0, "i002"), 
+    ("pu05", 140, 1, "i003"), 
+    ("pu06", 85, 1, "i003");
+
+SELECT * FROM purchases;
 
 INSERT INTO purchases_products (purchase_id, product_id, quantity)
 VALUES 
-    ("p001", "p003", 1);
-
+    ("pu01", "po04", 2), 
+    ("pu02", "po01", 1), 
+    ("pu03", "po02", 1), 
+    ("pu04", "po05", 1), 
+    ("pu05", "po04", 1), 
+    ("pu06", "po01", 1);
 
 SELECT * FROM purchases_products;
 
 SELECT * FROM purchases_products
-INNER JOIN products
-ON purchases_products.product_id = products.id;
-
-
-SELECT * FROM purchases_products
-INNER JOIN purchases
+INNER JOIN products 
+ON purchases_products.product_id = products.id
+INNER JOIN purchases 
 ON purchases_products.purchase_id = purchases.id
-INNER JOIN products
-ON purchases_products.product_id = products.id;
-
-SELECT
-    purchases_products.purchase_id AS codigoCompra,
-    products.name AS produto,
-    purchases_products.quantity AS quantidadeComprada
-FROM products
-INNER JOIN purchases_products
-ON products.id = purchases_products.product_id;
+INNER JOIN users
+ON purchases.buyer = users.id;
