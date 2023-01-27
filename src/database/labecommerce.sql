@@ -1,3 +1,4 @@
+-- Active: 1673884367428@@127.0.0.1@3306
 
 CREATE TABLE users (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
@@ -79,3 +80,4 @@ INNER JOIN purchases
 ON purchases_products.purchase_id = purchases.id
 INNER JOIN users
 ON purchases.buyer = users.id;
+
