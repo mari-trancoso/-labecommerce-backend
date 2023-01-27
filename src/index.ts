@@ -462,11 +462,11 @@ app.get("/purchases/:id", async (req: Request, res: Response) => {
         const [purchase] = await db("purchases").where({ id: id })
         if (purchase) {
 
-            const [cart] = await db("purchases")
+            const [purchaseWithUser] = await db("purchases")
                 .select(
                     "purchases.id AS purchaseID",
                     "purchases.total_price AS totalPrice",
-                    "purchases.created_at AS createddAt",
+                    "purchases.created_at AS createdAt",
                     "purchases.paid",
                     "users.id AS buyerID",
                     "users.email",
@@ -474,17 +474,17 @@ app.get("/purchases/:id", async (req: Request, res: Response) => {
                 .innerJoin("users", "purchases.buyer", "=", "users.id")
                 .where({ "purchases.id": id })
 
-            const purchaseProducts = await db("purchases_products")
+            const productFromPurchase = await db("purchases_products")
                 .select("purchases_products.product_id AS id",
                     "products.name",
                     "products.price",
                     "products.description",
-                    "products.image_URL AS urlImage",
+                    "products.image_URL AS imageUrl",
                     "purchases_products.quantity")
                 .innerJoin("products", "products.id", "=", "purchases_products.product_id")
                 .where({ purchase_id: id })
 
-            const result = { ...cart, productsList: purchaseProducts }
+            const result = { ...purchaseWithUser, productsList: productFromPurchase }
 
             res.status(200).send(result)
 
